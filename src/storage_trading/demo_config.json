@@ -1,0 +1,17 @@
+{
+  "seed": 2026,
+  "num_threads": 4,
+  "num_boost_round": 1000,
+  "early_stopping_rounds": 50,
+  "development_months": ["2025-10", "2025-11"],
+  "holdout_month": "2025-12",
+  "candidates": ["official", "supply_shape"],
+  "selection_metric": "mean_daily_profit_on_development_months",
+  "lightgbm": {
+    "objective": "regression",
+    "metric": "rmse",
+    "learning_rate": 0.05,
+    "num_leaves": 63,
+    "verbosity": -1
+  }
+}
