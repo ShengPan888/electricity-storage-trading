@@ -1,0 +1,24 @@
+{
+  "source_files": [
+    {
+      "run": "stayfoool_reproduction_20261109_102340",
+      "source_name": "pooled_summary.csv",
+      "public_file": "stayfoool_reproduction_20261109_102340_aggregate.csv",
+      "sha256": "2939f72d3cab03790ebe3c0aec5936452e425bc399db593c3ac23f2298946d00"
+    },
+    {
+      "run": "github_benchmark_20261109_095018",
+      "source_name": "pooled_summary.csv",
+      "public_file": "github_benchmark_20261109_095018_aggregate.csv",
+      "sha256": "51147124eb32c1d2ad87bc94d187e4d8aef87f984efa4b99f34d82fab32eb64b"
+    }
+  ],
+  "copied_only_aggregate_metrics": true,
+  "point_labels_or_model_weights_included": false,
+  "synthetic_research_results": false,
+  "upstream": {
+    "repository": "https://github.com/Stayfoool/electricity-ai4s-2026",
+    "commit": "10864ce6f88941cad54bac83161800bb503ed1f2",
+    "license": "MIT"
+  }
+}

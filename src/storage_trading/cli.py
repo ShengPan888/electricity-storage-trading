@@ -183,11 +183,24 @@ def main() -> None:
     real.add_argument("--data-dir", type=Path, required=True)
     real.add_argument("--output", type=Path, default=Path("outputs/real_demo"))
     real.add_argument("--config", type=Path)
+    research = commands.add_parser("reproduce-phase2", help="Reproduce the frozen 19-feature LightGBM/CatBoost model")
+    research.add_argument("--data-dir", type=Path, required=True)
+    research.add_argument("--output", type=Path, required=True)
+    overview = commands.add_parser("research-report", help="Build an offline overview from published aggregate results")
+    overview.add_argument("--output", type=Path, default=Path("outputs/research"))
     for name in ("backtest", "submit"):
         command = commands.add_parser(name)
         command.add_argument("--predictions", type=Path, required=True)
         command.add_argument("--output", type=Path, default=Path("outputs") / name)
     args = parser.parse_args()
+    if args.command == "reproduce-phase2":
+        from .research import reproduce
+        reproduce(args.data_dir, args.output)
+        return
+    if args.command == "research-report":
+        from .research_report import build_report
+        print(build_report(args.output))
+        return
     if args.command == "real-demo":
         from .pipeline import run_real_demo
         run_real_demo(args.data_dir, args.output, args.config)
