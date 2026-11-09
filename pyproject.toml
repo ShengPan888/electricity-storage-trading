@@ -22,4 +22,4 @@ storage-trading = "storage_trading.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-storage_trading = ["dashboard.html", "demo_config.json"]
+storage_trading = ["dashboard.html", "research_report.html", "demo_config.json"]
