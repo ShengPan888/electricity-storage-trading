@@ -18,10 +18,10 @@
 | 从数据到交易的完整思路 | [技术路线与8张流程图](docs/architecture.md) |
 | 现在的精度和收益 | [统一评价结果](docs/RESULTS.md) · [精确JSON](research/results.json) |
 | 为什么调参后仍保留原模型 | [实验演进与选择](docs/experiment_history.md) |
-| 模型到底输入哪些特征 | [19特征模型卡](docs/model_card.md) |
+| 模型到底输入哪些特征 | [逐项19列、公式与时点](docs/feature_dictionary.md) · [模型卡](docs/model_card.md) |
 | 如何避免未来信息泄漏 | [数据与信息边界](docs/data_contract.md) |
-| 与蒙西实际交易相差什么 | [政策对照](docs/policy_alignment.md) |
-| 没有比赛数据怎样运行 | 下方合成Demo与离线研究概览 |
+| 电力交易有哪些行业规则，做到了哪些 | [正式文件、业务流程与实现差距](docs/market_rule_guide.md) · [征求稿专项](docs/policy_alignment.md) |
+| 没有比赛数据怎样看完整演示 | [下载演示HTML及打开方法](docs/demo/README.md) · 下方运行入口 |
 
 ## 1. 完整技术路线
 
@@ -86,6 +86,36 @@ flowchart TD
 
 供需差值是待检验候选，未知单位、缩放和联络线方向下，不能认定为官方物理竞价空间。相关性不解释为因果。冻结模型没有未来实际边界、历史价滞后或气象输入。[模型卡](docs/model_card.md)
 
+### 逐项输入列名（严格按模型顺序）
+
+原始CSV只有`times`＋7预测；时间派生为11列，比例再加1列。历史`A`是训练标签，不是输入。此表只指冻结19列模型，Stayfoool完整方案另用17列。
+
+|序号|输入特征|来源 / 公式|
+|---|---|---|
+|1|`系统负荷预测值`|同名官方CSV预测列，原值输入|
+|2|`风光总加预测值`|同名官方CSV预测列，原值输入|
+|3|`联络线预测值`|同名官方CSV预测列，原值输入|
+|4|`风电预测值`|同名官方CSV预测列，原值输入|
+|5|`光伏预测值`|同名官方CSV预测列，原值输入|
+|6|`水电预测值`|同名官方CSV预测列，原值输入|
+|7|`非市场化机组预测值`|同名官方CSV预测列，原值输入|
+|8|`hour`|北京时间目标时间的小时|
+|9|`minute`|北京时间目标时间的分钟|
+|10|`dayofweek`|目标日期星期，周一=0|
+|11|`month`|目标日期月份|
+|12|`slot_id`|hour × 4 + minute // 15|
+|13|`slot_sin`|sin(2π × slot_id / 96)|
+|14|`slot_cos`|cos(2π × slot_id / 96)|
+|15|`weekday_sin`|sin(2π × dayofweek / 7)|
+|16|`weekday_cos`|cos(2π × dayofweek / 7)|
+|17|`month_sin`|sin(2π × (month − 1) / 12)|
+|18|`month_cos`|cos(2π × (month − 1) / 12)|
+|19|`renewable_ratio_candidate`|风光总加预测值 / 系统负荷预测值|
+
+7项预测的单位/缩放和联络线方向未确认，不能直接标为MW。官方输入可用于竞赛，不证明其原始版本在真实申报截止前已发布。比例分母绝对值≤1e−12设为缺失；CatBoost插补仅在训练侧拟合。
+
+[完整字典](docs/feature_dictionary.md)逐列解释作用、可用时点和检查，并列明未来实际边界、A、历史价滞后、NWP及其他候选的用途。
+
 ## 4. 实验演进
 
 ```mermaid
@@ -112,6 +142,20 @@ Stayfoool上游固定为[10864ce](https://github.com/Stayfoool/electricity-ai4s-
 
 [优化器](src/storage_trading/core.py)检查SOC、连续性、先充后放、边界和单循环。真实设备效率、可用容量、调节速率、禁限时段、调度校核及完整结算**尚未实现**。[政策边界](docs/policy_alignment.md)
 
+### 竞赛策略与真实电力交易规范，具体差在哪
+
+真实业务先确认市场、交易身份、适用时间和文件版本，再走“注册→披露→预测→申报→校核与调度→计量结算→复盘”。目前实现的是竞赛预测、固定规则策略与离线原价结算。
+
+|规范层次|已核查的官方材料|本项目对应及缺口|
+|---|---|---|
+|国家运行框架|[2024年第20号令《电力市场运行基本规则》](https://zfxxgk.ndrc.gov.cn/wap/iteminfo.jsp?id=20379)|注册、交易校核、统一调度、计量结算和披露均有制度要求；单站优化不替代这些环节|
+|国家储能注册条件|[国能发监管规〔2024〕76号](https://zfxxgk.nea.gov.cn/2024-09/13/c_1212399683.htm)第11条|并网调度、分时计量/传输和设备技术条件；竞赛没有接入真实主体和设备|
+|蒙西正式规则体系|[内能源电力发〔2024〕33号](https://nyj.nmg.gov.cn/zwgk/zfxxgkzl/fdzdgknr/xzgfxwj/202412/t20241231_2646354.html)|通知明确自2025-01-01施行；这是2025研究规则检索起点，不宣称逐条认证或穷尽修订|
+|2026中长期安排|[内能源电力字〔2025〕783号](https://nyj.nmg.gov.cn/tzgg/202512/t20251230_2843227.html)第七部分|独立储能发/用电单元、中长期合约安全校核；不当作完整现货细则，不倒推2025|
+|2026修订征求稿|[2026-02-14征求意见公告](https://nyj.nmg.gov.cn/tzgg/202602/t20260214_2863478.html)|禁充禁放、SOC和时段等作草案差距对照；未取得整体生效确认，不直接编入当前约束|
+
+预测实时价不是市场分段报价，合法比赛曲线不保证市场原样执行，`ΣP×E`也不是计入全部合约与费用后的实盘净收益。详细[R01—R10逐项对照](docs/market_rule_guide.md)列明已做、未做和缺失输入；缺火电上下限、备用等数据时，不用7列假算官方禁限公式。
+
 ## 6. 运行Demo与复现
 
 ### A. 无数据：合成策略Demo
@@ -133,7 +177,7 @@ python run.py test
 python run.py research-report --output outputs/research
 ```
 
-打开 `outputs/research/index.html` 离线浏览真实汇总、路线图和候选对照。该命令读取公开汇总，**不重训模型、不捏造结果**。
+打开 `outputs/research/index.html` 离线浏览完整19特征、教学变换示例、业务流程、行业规范差距、真实汇总与候选对照。也可直接下载仓库内的[完整演示HTML](docs/demo/index.html)，打开方法见[说明](docs/demo/README.md)。该命令读取公开汇总，**不重训模型、不捏造结果**。
 
 ### C. 持有官方数据：复现冻结Phase 2规格
 
@@ -168,6 +212,9 @@ scripts/render_research_assets.py 图示生成与公开记录检查
 docs/architecture.md            项目全逻辑与8张路线图
 docs/RESULTS.md                 最新指标与统计限制
 docs/model_card.md              特征、训练、推理契约
+docs/feature_dictionary.md      逐项19列、来源、时点与用途
+docs/market_rule_guide.md       正式文件、业务流程及R01—R10差距
+docs/demo/index.html           可直接下载的完整离线演示
 docs/policy_alignment.md        政策与实盘差距
 docs/history/2026-10-28/         旧文档存档
 tests/                          储能规则与信息边界核验
