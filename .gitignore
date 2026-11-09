@@ -16,3 +16,15 @@ dist/
 .env
 .env.*
 !.env.example
+*.cbm
+*.joblib
+*.pkl
+*.sqlite
+*.db
+catboost_info/
+to_sais_new/
+all_nc/
+output.csv
+test_in_feature_ori.csv
+mengxi_boundary_anon_filtered.csv
+mengxi_node_price_selected.csv

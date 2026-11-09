@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "research_run": "phase2_20261108_164706",
+  "model": "LightGBM + CatBoost, equal price weights",
+  "num_threads": 8,
+  "inner_validation_days": 14,
+  "max_rounds": 1000,
+  "early_stopping_rounds": 50,
+  "lightgbm": {
+    "objective": "regression_l2", "metric": "rmse",
+    "learning_rate": 0.05, "num_leaves": 63, "verbose": -1
+  },
+  "catboost": {
+    "iterations": 1000, "depth": 6, "learning_rate": 0.05,
+    "loss_function": "RMSE", "random_seed": 0, "verbose": false,
+    "allow_writing_files": false, "task_type": "CPU"
+  },
+  "folds": [
+    {"name": "spring", "start": "2025-05-01", "end": "2025-05-31"},
+    {"name": "summer", "start": "2025-08-01", "end": "2025-08-31"},
+    {"name": "autumn", "start": "2025-11-01", "end": "2025-11-30"}
+  ],
+  "diagnostic_only": {"start": "2025-12-01", "end": "2025-12-31"},
+  "historical_price_features": false,
+  "future_actual_features": false,
+  "weather_features": false,
+  "labels": "Original unfiltered price labels; no imputation or clipping",
+  "validation_scope": "All results are internal development estimates",
+  "forecast_input_contract": "Official next-day batch forecast columns; actual issue clocks and label publication delays are unknown"
+}
